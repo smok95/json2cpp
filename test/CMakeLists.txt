@@ -18,7 +18,14 @@ FetchContent_MakeAvailable(rapidjson)
 # 생성된 헤더 파일 경로
 set(GENERATED_DIR ${CMAKE_SOURCE_DIR}/../out)
 
-# 테스트 실행 파일
+# 기본 테스트 (가장 간단한 테스트 - CI에서 사용)
+add_executable(test_basic test_basic.cpp ${GENERATED_DIR}/serializer.cpp ${GENERATED_DIR}/rapidjson_adapter.cpp)
+target_include_directories(test_basic PRIVATE
+    ${rapidjson_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/..
+)
+
+# 테스트 실행 파일 (예제 파일 필요)
 add_executable(test_serialization test_serialization.cpp)
 target_include_directories(test_serialization PRIVATE
     ${rapidjson_SOURCE_DIR}/include
@@ -34,9 +41,11 @@ target_include_directories(test_simple PRIVATE
 
 # 컴파일 옵션
 if(MSVC)
+    target_compile_options(test_basic PRIVATE /W4)
     target_compile_options(test_serialization PRIVATE /W4)
     target_compile_options(test_simple PRIVATE /W4)
 else()
+    target_compile_options(test_basic PRIVATE -Wall -Wextra -pedantic)
     target_compile_options(test_serialization PRIVATE -Wall -Wextra -pedantic)
     target_compile_options(test_simple PRIVATE -Wall -Wextra -pedantic)
 endif()
