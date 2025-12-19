@@ -14,22 +14,24 @@ import (
 )
 
 var (
-	inputFile    string
-	outputDir    string
-	legacyCpp    bool
-	namespace    string
-	camelCase    bool
-	optionalNull bool
-	merge        bool
-	stringRef    bool
-	overwrite    bool
+	inputFile     string
+	outputDir     string
+	parserBackend string
+	legacyCpp     bool
+	namespace     string
+	camelCase     bool
+	optionalNull  bool
+	merge         bool
+	stringRef     bool
+	overwrite     bool
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "json2cpp",
-	Short: "JSON to C++ code generator with rapidjson",
-	Long: `JSON to C++ code generator that creates structs and serialization code
-	for pre-C++11 compatible C++ (legacy toolchains) with rapidjson library.`,
+	Short: "JSON to C++ code generator",
+	Long: `JSON to C++ code generator that creates structs and serialization code.
+	Supports multiple JSON parsers: rapidjson (default), nlohmann/json, jsoncpp.
+	Can generate pre-C++11 compatible code for legacy toolchains.`,
 	RunE: run,
 }
 
@@ -43,6 +45,7 @@ func Execute() {
 func init() {
 	rootCmd.Flags().StringVarP(&inputFile, "input", "i", "", "Input JSON file (required)")
 	rootCmd.Flags().StringVarP(&outputDir, "output", "o", "./out", "Output directory")
+	rootCmd.Flags().StringVarP(&parserBackend, "parser", "p", "rapidjson", "JSON parser backend (rapidjson, nlohmann, jsoncpp)")
 	rootCmd.Flags().BoolVar(&legacyCpp, "legacy-cpp", false, "Generate legacy C++ (pre-C++11) compatible code")
 	rootCmd.Flags().StringVar(&namespace, "namespace", "", "C++ namespace")
 	rootCmd.Flags().BoolVar(&camelCase, "camelcase", false, "Use camelCase for field names")
@@ -98,8 +101,20 @@ func run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no structs generated from input")
 	}
 
+	// Validate parser selection
+	parserType := codegen.ParserType(parserBackend)
+	validParsers := map[string]bool{
+		"rapidjson": true,
+		"nlohmann":  true,
+		"jsoncpp":   true,
+	}
+	if !validParsers[parserBackend] {
+		return fmt.Errorf("invalid parser '%s'. Valid options: rapidjson, nlohmann, jsoncpp", parserBackend)
+	}
+
 	// 코드 생성기 설정
 	cfg := codegen.Config{
+		Parser:       parserType,
 		LegacyCPP:    legacyCpp,
 		Namespace:    namespace,
 		CamelCase:    camelCase,
