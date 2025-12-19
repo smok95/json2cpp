@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -28,9 +27,14 @@ var (
 
 var rootCmd = &cobra.Command{
 	Use:   "json2cpp",
-	Short: "JSON to C++ code generator",
-	Long: `JSON to C++ code generator that creates structs and serialization code.
-	Supports multiple JSON parsers: rapidjson (default), nlohmann/json, jsoncpp.
+	Short: "JSON to C++ code generator with parser-agnostic adapter pattern",
+	Long: `JSON to C++ code generator that creates parser-independent structs and serialization code.
+	Uses adapter pattern to support multiple JSON parsers without code changes:
+	- RapidJSON
+	- nlohmann/json
+	- JsonCpp
+
+	Generates separate files: types.h, serializer.h/cpp, and adapter files.
 	Can generate pre-C++11 compatible code for legacy toolchains.`,
 	RunE: run,
 }
@@ -44,43 +48,48 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().StringVarP(&inputFile, "input", "i", "", "Input JSON file (required)")
-	rootCmd.Flags().StringVarP(&outputDir, "output", "o", "./out", "Output directory")
-	rootCmd.Flags().StringVarP(&parserBackend, "parser", "p", "rapidjson", "JSON parser backend (rapidjson, nlohmann, jsoncpp)")
-	rootCmd.Flags().BoolVar(&legacyCpp, "legacy-cpp", false, "Generate legacy C++ (pre-C++11) compatible code")
-	rootCmd.Flags().StringVar(&namespace, "namespace", "", "C++ namespace")
-	rootCmd.Flags().BoolVar(&camelCase, "camelcase", false, "Use camelCase for field names")
-	rootCmd.Flags().BoolVar(&optionalNull, "optional-null", false, "Generate Optional<T> for null fields")
-	rootCmd.Flags().BoolVar(&merge, "merge", false, "Merge multiple JSON files")
-	rootCmd.Flags().BoolVar(&stringRef, "string-ref", false, "Use const std::string& for strings")
-	rootCmd.Flags().BoolVar(&overwrite, "overwrite", false, "Overwrite existing files")
+	rootCmd.Flags().StringVarP(&outputDir, "output", "o", "./generated", "Output directory for generated files")
+	rootCmd.Flags().BoolVar(&legacyCpp, "legacy-cpp", false, "Generate C++03 compatible code")
+	rootCmd.Flags().StringVar(&namespace, "namespace", "", "C++ namespace for generated types")
+	rootCmd.Flags().BoolVar(&camelCase, "camelcase", false, "Use camelCase for field names (default: snake_case)")
+	rootCmd.Flags().BoolVar(&optionalNull, "optional-null", false, "Generate Optional<T> for nullable fields")
+	rootCmd.Flags().BoolVar(&merge, "merge", false, "Merge multiple JSON files (supports wildcards)")
 
 	rootCmd.MarkFlagRequired("input")
+
+	// Deprecated flags (kept for compatibility but ignored)
+	rootCmd.Flags().StringVarP(&parserBackend, "parser", "p", "", "[DEPRECATED] Parser flag is ignored - adapter pattern supports all parsers")
+	rootCmd.Flags().BoolVar(&stringRef, "string-ref", false, "[DEPRECATED] String-ref flag is ignored")
+	rootCmd.Flags().BoolVar(&overwrite, "overwrite", false, "[DEPRECATED] Output directory is always overwritten")
+	rootCmd.Flags().MarkHidden("parser")
+	rootCmd.Flags().MarkHidden("string-ref")
+	rootCmd.Flags().MarkHidden("overwrite")
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	// 입력 파일 확인
+	// Check input file exists
 	if _, err := os.Stat(inputFile); os.IsNotExist(err) {
 		return fmt.Errorf("input file does not exist: %s", inputFile)
 	}
 
-	// 출력 디렉토리 생성
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
-		return fmt.Errorf("failed to create output directory: %w", err)
-	}
-
-	// 파서 생성
+	// Create JSON parser
 	p := parser.NewParser(legacyCpp, camelCase)
 
-	// 타입 정보 수집
+	// Collect type information
 	var allStructs []*types.Struct
 
 	if merge {
-		// 여러 JSON 파일 처리 (와일드카드 지원)
+		// Process multiple JSON files (supports wildcards)
 		files, err := filepath.Glob(inputFile)
 		if err != nil {
 			return fmt.Errorf("failed to glob input files: %w", err)
 		}
 
+		if len(files) == 0 {
+			return fmt.Errorf("no files matched pattern: %s", inputFile)
+		}
+
+		fmt.Printf("Merging %d files...\n", len(files))
 		for _, file := range files {
 			structs, err := p.ParseFile(file)
 			if err != nil {
@@ -89,7 +98,7 @@ func run(cmd *cobra.Command, args []string) error {
 			allStructs = types.MergeTypes(allStructs, structs)
 		}
 	} else {
-		// 단일 파일 처리
+		// Process single file
 		structs, err := p.ParseFile(inputFile)
 		if err != nil {
 			return fmt.Errorf("failed to parse input file: %w", err)
@@ -101,62 +110,43 @@ func run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no structs generated from input")
 	}
 
-	// Validate parser selection
-	parserType := codegen.ParserType(parserBackend)
-	validParsers := map[string]bool{
-		"rapidjson": true,
-		"nlohmann":  true,
-		"jsoncpp":   true,
-	}
-	if !validParsers[parserBackend] {
-		return fmt.Errorf("invalid parser '%s'. Valid options: rapidjson, nlohmann, jsoncpp", parserBackend)
-	}
-
-	// 코드 생성기 설정
+	// Configure adapter-based code generator
 	cfg := codegen.Config{
-		Parser:       parserType,
 		LegacyCPP:    legacyCpp,
 		Namespace:    namespace,
 		CamelCase:    camelCase,
 		OptionalNull: optionalNull,
-		StringRef:    stringRef,
 	}
 
-	gen := codegen.NewGenerator(cfg)
+	// Create adapter generator
+	gen := codegen.NewAdapterGenerator(cfg, outputDir)
 
-	// 타입 정보
+	// Type information
 	typeInfo := &types.TypeInfo{
 		Structs: allStructs,
 	}
 
-	// C++ 코드 생성
-	code, err := gen.Generate(typeInfo)
-	if err != nil {
-		return fmt.Errorf("failed to generate code: %w", err)
+	// Generate all files (types.h, serializer.h/cpp, adapter files)
+	fmt.Printf("Generating parser-agnostic code...\n")
+	if err := gen.GenerateFiles(typeInfo); err != nil {
+		return fmt.Errorf("failed to generate files: %w", err)
 	}
 
-	// 출력 파일 결정
-	outputFile := filepath.Join(outputDir, "generated.h")
-	if !overwrite {
-		// 파일이 이미 존재하면 새로운 이름 생성
-		counter := 1
-		baseName := "generated"
-		for {
-			outputFile = filepath.Join(outputDir, fmt.Sprintf("%s_%d.h", baseName, counter))
-			if _, err := os.Stat(outputFile); os.IsNotExist(err) {
-				break
-			}
-			counter++
-		}
+	// Print summary
+	fmt.Printf("\n✓ Generated successfully in: %s\n", outputDir)
+	fmt.Printf("  - types.h (data structures)\n")
+	fmt.Printf("  - serializer.h/cpp (serialization functions)\n")
+	fmt.Printf("  - json_ptr.h (smart pointer)\n")
+	fmt.Printf("  - json_adapter.h (base interface)\n")
+	fmt.Printf("  - rapidjson_adapter.h/cpp\n")
+	fmt.Printf("  - nlohmann_adapter.h/cpp\n")
+	fmt.Printf("  - jsoncpp_adapter.h/cpp\n")
+	fmt.Printf("\nStructs: %d\n", len(allStructs))
+	if legacyCpp {
+		fmt.Printf("Mode: C++03 compatible\n")
+	} else {
+		fmt.Printf("Mode: Modern C++ (C++11+)\n")
 	}
-
-	// 파일 쓰기
-	if err := ioutil.WriteFile(outputFile, []byte(code), 0644); err != nil {
-		return fmt.Errorf("failed to write output file: %w", err)
-	}
-
-	fmt.Printf("Generated: %s\n", outputFile)
-	fmt.Printf("Structs: %d\n", len(allStructs))
 
 	return nil
 }
