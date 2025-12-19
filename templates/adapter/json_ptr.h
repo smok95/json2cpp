@@ -4,18 +4,22 @@
 #ifndef JSON2CPP_JSON_PTR_H
 #define JSON2CPP_JSON_PTR_H
 
-namespace json2cpp {
-
-// Detect C++11 or later
+// Detect C++11 or later and include necessary headers
 #if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1900)
     #include <memory>
-
-    template<typename T>
-    using UniquePtr = std::unique_ptr<T>;
-
     #define JSON2CPP_NULLPTR nullptr
     #define JSON2CPP_OVERRIDE override
+#else
+    #define JSON2CPP_NULLPTR NULL
+    #define JSON2CPP_OVERRIDE
+#endif
 
+namespace json2cpp {
+
+#if __cplusplus >= 201103L || (defined(_MSC_VER) && _MSC_VER >= 1900)
+    // Use standard unique_ptr for C++11+
+    template<typename T>
+    using UniquePtr = std::unique_ptr<T>;
 #else
     // C++03-compatible UniquePtr implementation
     template<typename T>
@@ -54,10 +58,6 @@ namespace json2cpp {
         bool operator!() const { return ptr_ == NULL; }
         operator bool() const { return ptr_ != NULL; }
     };
-
-    #define JSON2CPP_NULLPTR NULL
-    #define JSON2CPP_OVERRIDE
-
 #endif
 
 } // namespace json2cpp

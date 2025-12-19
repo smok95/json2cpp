@@ -155,16 +155,10 @@ func (g *AdapterGenerator) generateTypes(info *types.TypeInfo) (string, error) {
 		buf.WriteString(fmt.Sprintf("namespace %s {\n\n", g.namespace))
 	}
 
-	// Forward declarations
-	buf.WriteString("// Forward declarations\n")
-	for _, s := range info.Structs {
-		buf.WriteString(fmt.Sprintf("struct %s;\n", s.Name))
-	}
-	buf.WriteString("\n")
-
-	// Struct definitions
-	for i, s := range info.Structs {
-		if i > 0 {
+	// Struct definitions (reverse order - dependencies first)
+	for i := len(info.Structs) - 1; i >= 0; i-- {
+		s := info.Structs[i]
+		if i < len(info.Structs)-1 {
 			buf.WriteString("\n")
 		}
 		structCode, err := g.generateStruct(s)
