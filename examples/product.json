@@ -1,0 +1,47 @@
+{
+  "product_id": "PROD-12345",
+  "name": "Wireless Gaming Mouse",
+  "price": 79.99,
+  "discount_price": 59.99,
+  "in_stock": true,
+  "quantity": 150,
+  "rating": 4.7,
+  "categories": ["Electronics", "Gaming", "Accessories"],
+  "specifications": {
+    "dpi": 16000,
+    "buttons": 8,
+    "wireless": true,
+    "battery_life": "70 hours",
+    "weight": 95.5
+  },
+  "reviews": [
+    {
+      "user": "gamer123",
+      "rating": 5,
+      "comment": "Best mouse ever!",
+      "helpful_count": 42
+    },
+    {
+      "user": "tech_reviewer",
+      "rating": 4,
+      "comment": "Great value for money",
+      "helpful_count": 28
+    }
+  ],
+  "images": [
+    "https://example.com/img1.jpg",
+    "https://example.com/img2.jpg"
+  ],
+  "variants": [
+    {
+      "color": "Black",
+      "sku": "PROD-12345-BLK",
+      "available": true
+    },
+    {
+      "color": "White",
+      "sku": "PROD-12345-WHT",
+      "available": false
+    }
+  ]
+}

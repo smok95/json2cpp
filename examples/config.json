@@ -1,0 +1,54 @@
+{
+  "app_name": "MyApp",
+  "version": "1.0.0",
+  "debug": true,
+  "port": 8080,
+  "timeout_seconds": 30.0,
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "mydb",
+    "username": "admin",
+    "password": "secure_pass",
+    "pool_size": 10,
+    "ssl_enabled": true,
+    "connection_timeout": 5000
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600,
+    "max_size": 1000,
+    "backends": ["redis", "memcached"]
+  },
+  "logging": {
+    "level": "info",
+    "file": "/var/log/myapp.log",
+    "max_size_mb": 100,
+    "rotate": true,
+    "formats": {
+      "console": "text",
+      "file": "json"
+    }
+  },
+  "features": {
+    "authentication": true,
+    "analytics": false,
+    "rate_limiting": true
+  },
+  "allowed_origins": [
+    "https://example.com",
+    "https://app.example.com"
+  ],
+  "rate_limits": [
+    {
+      "path": "/api/*",
+      "requests_per_minute": 100,
+      "burst": 20
+    },
+    {
+      "path": "/public/*",
+      "requests_per_minute": 1000,
+      "burst": 100
+    }
+  ]
+}

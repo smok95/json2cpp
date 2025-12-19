@@ -1,0 +1,38 @@
+{
+  "status": "success",
+  "timestamp": 1703001234567,
+  "request_id": "req-abc-123-xyz",
+  "data": {
+    "total": 150,
+    "page": 1,
+    "per_page": 10,
+    "items": [
+      {
+        "id": 101,
+        "title": "First Item",
+        "created_at": "2023-12-19T10:30:00Z",
+        "tags": ["urgent", "important"]
+      },
+      {
+        "id": 102,
+        "title": "Second Item",
+        "created_at": "2023-12-19T11:30:00Z",
+        "tags": []
+      }
+    ]
+  },
+  "pagination": {
+    "has_next": true,
+    "has_prev": false,
+    "next_page": 2,
+    "prev_page": null,
+    "total_pages": 15
+  },
+  "errors": [],
+  "warnings": ["Deprecated API version"],
+  "metadata": {
+    "server": "api-01",
+    "version": "2.1.0",
+    "response_time_ms": 123.45
+  }
+}
