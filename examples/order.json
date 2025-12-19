@@ -1,0 +1,21 @@
+{
+  "id": 123456789,
+  "symbol": "AAPL",
+  "side": "BUY",
+  "quantity": 100,
+  "price": 150.75,
+  "type": "LIMIT",
+  "time_in_force": "DAY",
+  "status": "PENDING",
+  "timestamp": "2023-12-19T10:30:00Z",
+  "tags": ["urgent", "block"],
+  "metadata": {
+    "exchange": "NASDAQ",
+    "market_data": {
+      "bid": 150.70,
+      "ask": 150.80,
+      "last": 150.75
+    }
+  },
+  "optional_field": null
+}
