@@ -8,3 +8,6 @@ out/
 test_simple
 test_serialization
 test_output/
+test_output/
+test_output_legacy/
+generated/
