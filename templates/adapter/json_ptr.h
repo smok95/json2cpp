@@ -31,6 +31,10 @@ namespace json2cpp {
         UniquePtr(const UniquePtr&);
         UniquePtr& operator=(const UniquePtr&);
 
+        // Safe bool idiom for C++03
+        typedef void (UniquePtr::*bool_type)() const;
+        void this_type_does_not_support_comparisons() const {}
+
     public:
         explicit UniquePtr(T* p = NULL) : ptr_(p) {}
 
@@ -55,8 +59,12 @@ namespace json2cpp {
             }
         }
 
+        // Safe bool idiom: allows if (ptr) without implicit conversions
+        operator bool_type() const {
+            return ptr_ != NULL ? &UniquePtr::this_type_does_not_support_comparisons : NULL;
+        }
+
         bool operator!() const { return ptr_ == NULL; }
-        operator bool() const { return ptr_ != NULL; }
     };
 #endif
 
