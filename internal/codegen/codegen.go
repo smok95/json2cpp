@@ -116,6 +116,9 @@ typedef Optional<std::string> OptionalString;`
 func (g *Generator) generateStruct(s *types.Struct) (string, error) {
 	var buf bytes.Buffer
 
+	// Reset usedNames for each struct to avoid collisions across different structs
+	g.usedNames = make(map[string]int)
+
 	// struct 정의
 	buf.WriteString(fmt.Sprintf("struct %s {\n", s.Name))
 
@@ -574,12 +577,10 @@ func (g *Generator) getFieldName(name string) string {
 	// Final sanitizer + uniqueness enforcement.
 	// Ensure generator-level camelCase preference is respected.
 	sanitized := nameutil.SanitizeToCppIdentifier(name, g.useCamelCase, false)
-	if cnt, ok := g.usedNames[sanitized]; !ok {
-		g.usedNames[sanitized] = 1
-		return sanitized
-	} else {
-		// existing name — append deterministic suffix
-		g.usedNames[sanitized] = cnt + 1
-		return fmt.Sprintf("%s_%d", sanitized, cnt)
+	if _, ok := g.usedNames[sanitized]; !ok {
+		g.usedNames[sanitized] = 0
 	}
+	// Always return the sanitized name without suffix
+	// The usedNames map is only used for tracking, not for generating suffixes
+	return sanitized
 }

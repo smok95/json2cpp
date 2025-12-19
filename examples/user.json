@@ -1,0 +1,25 @@
+{
+  "id": 12345,
+  "username": "john_doe",
+  "email": "john@example.com",
+  "age": 30,
+  "balance": 1234.56,
+  "is_active": true,
+  "profile": {
+    "first_name": "John",
+    "last_name": "Doe",
+    "bio": "Software engineer with 10+ years of experience",
+    "website": "https://johndoe.com"
+  },
+  "roles": ["admin", "user", "moderator"],
+  "settings": {
+    "theme": "dark",
+    "notifications": {
+      "email": true,
+      "push": false,
+      "sms": true
+    }
+  },
+  "scores": [95, 87, 92, 88],
+  "metadata": null
+}

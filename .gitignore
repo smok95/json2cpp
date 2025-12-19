@@ -1,2 +1,9 @@
 json2cpp
 /out
+
+test/build/
+out/
+*.o
+*.a
+test_simple
+test_serialization

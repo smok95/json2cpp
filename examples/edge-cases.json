@@ -1,0 +1,36 @@
+{
+  "empty_string": "",
+  "empty_array": [],
+  "empty_object": {},
+  "zero": 0,
+  "negative_int": -42,
+  "negative_float": -3.14159,
+  "large_int": 9223372036854775807,
+  "small_float": 0.0000001,
+  "boolean_true": true,
+  "boolean_false": false,
+  "null_value": null,
+  "unicode_string": "Hello 世界 🌍",
+  "escaped_string": "Line1\nLine2\tTabbed",
+  "special_chars": "!@#$%^&*()_+-=[]{}|;':\",./<>?",
+  "nested_empty": {
+    "level1": {
+      "level2": {
+        "level3": {}
+      }
+    }
+  },
+  "mixed_array": [1, 2, 3, 4, 5],
+  "float_array": [1.1, 2.2, 3.3, 4.4, 5.5],
+  "bool_array": [true, false, true, false],
+  "nested_array_objects": [
+    {
+      "id": 1,
+      "values": [10, 20, 30]
+    },
+    {
+      "id": 2,
+      "values": [40, 50, 60]
+    }
+  ]
+}
