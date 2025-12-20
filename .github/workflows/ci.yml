@@ -46,23 +46,8 @@ jobs:
         with:
           go-version: '1.21'
 
-      - name: Download Go binary
-        uses: actions/download-artifact@v4
-        with:
-          name: json2cpp-binary
-
-      - name: Make binary executable (Unix)
-        if: runner.os != 'Windows'
-        run: chmod +x json2cpp
-
       - name: Generate C++ code for testing
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            go run main.go -i examples/config.json -o out --overwrite
-          else
-            ./json2cpp -i examples/config.json -o out --overwrite
-          fi
+        run: go run main.go -i examples/config.json -o out --overwrite
 
       - name: Set up CMake
         uses: lukka/get-cmake@latest
