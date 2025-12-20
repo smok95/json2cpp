@@ -11,9 +11,17 @@ include(FetchContent)
 FetchContent_Declare(
     rapidjson
     GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
-    GIT_TAG v1.1.0
+    GIT_TAG master
 )
-FetchContent_MakeAvailable(rapidjson)
+# RapidJSON의 빌드 시스템을 건너뛰고 헤더만 사용
+set(RAPIDJSON_BUILD_DOC OFF CACHE BOOL "" FORCE)
+set(RAPIDJSON_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(RAPIDJSON_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_GetProperties(rapidjson)
+if(NOT rapidjson_POPULATED)
+    FetchContent_Populate(rapidjson)
+    # add_subdirectory를 호출하지 않음 - 헤더만 사용
+endif()
 
 # 생성된 헤더 파일 경로
 set(GENERATED_DIR ${CMAKE_SOURCE_DIR}/../out)
