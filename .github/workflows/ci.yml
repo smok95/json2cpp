@@ -49,6 +49,19 @@ jobs:
       - name: Generate C++ code for testing
         run: go run main.go -i test_simple.json -o out --overwrite
 
+      - name: Install RapidJSON
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y rapidjson-dev
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install rapidjson
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+            # Windows에서는 FetchContent 사용 (CMakeLists.txt에서 처리)
+            echo "Windows will use FetchContent"
+          fi
+
       - name: Set up CMake
         uses: lukka/get-cmake@latest
 
