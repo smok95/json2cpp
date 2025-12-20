@@ -7,30 +7,33 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # rapidjson 헤더 경로 설정
 # 시스템에 설치된 RapidJSON 사용 시도, 없으면 FetchContent 사용
-find_package(RapidJSON QUIET)
+find_path(RAPIDJSON_INCLUDE_DIR
+    NAMES rapidjson/rapidjson.h
+    PATHS
+        /usr/include
+        /usr/local/include
+        /opt/homebrew/include
+        $ENV{RAPIDJSON_INCLUDE_DIR}
+)
 
-if(NOT RapidJSON_FOUND)
+if(RAPIDJSON_INCLUDE_DIR)
+    # 시스템에 설치된 RapidJSON 발견
+    message(STATUS "Using system RapidJSON at ${RAPIDJSON_INCLUDE_DIR}")
+    set(rapidjson_SOURCE_DIR ${RAPIDJSON_INCLUDE_DIR})
+else()
     # 시스템에 없으면 FetchContent로 다운로드
+    message(STATUS "RapidJSON not found in system, using FetchContent")
     include(FetchContent)
     FetchContent_Declare(
         rapidjson
         GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
         GIT_TAG master
     )
-    # RapidJSON의 빌드 시스템을 건너뛰고 헤더만 사용
-    set(RAPIDJSON_BUILD_DOC OFF CACHE BOOL "" FORCE)
-    set(RAPIDJSON_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-    set(RAPIDJSON_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     FetchContent_GetProperties(rapidjson)
     if(NOT rapidjson_POPULATED)
         FetchContent_Populate(rapidjson)
-        # add_subdirectory를 호출하지 않음 - 헤더만 사용
         set(rapidjson_SOURCE_DIR ${rapidjson_SOURCE_DIR})
     endif()
-else()
-    # 시스템에 설치된 RapidJSON 사용
-    message(STATUS "Using system RapidJSON")
-    set(rapidjson_SOURCE_DIR /usr/include)
 endif()
 
 # 생성된 헤더 파일 경로
