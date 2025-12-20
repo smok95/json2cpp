@@ -15,11 +15,11 @@ int main() {
     std::cout << "  json2cpp Basic Test" << std::endl;
     std::cout << "========================================" << std::endl;
 
-    // Create a simple JSON document
+    // Create a simple JSON document matching test_simple.json structure
     const char* json = R"({
-        "username": "testuser",
-        "age": 25,
-        "is_active": true
+        "name": "test",
+        "value": 123,
+        "active": true
     })";
 
     // Parse JSON

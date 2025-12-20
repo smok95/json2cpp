@@ -47,7 +47,7 @@ jobs:
           go-version: '1.21'
 
       - name: Generate C++ code for testing
-        run: go run main.go -i examples/config.json -o out --overwrite
+        run: go run main.go -i test_simple.json -o out --overwrite
 
       - name: Set up CMake
         uses: lukka/get-cmake@latest
