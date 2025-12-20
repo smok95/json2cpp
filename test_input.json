@@ -1,0 +1,24 @@
+{
+  "username": "testuser",
+  "age": 25,
+  "email": "test@example.com",
+  "balance": 100.5,
+  "is_active": true,
+  "roles": ["admin", "user"],
+  "scores": [95, 87, 92],
+  "id": 12345,
+  "profile": {
+    "first_name": "Test",
+    "last_name": "User",
+    "bio": "Test bio",
+    "website": "https://example.com"
+  },
+  "settings": {
+    "theme": "dark",
+    "notifications": {
+      "email": true,
+      "push": false,
+      "sms": true
+    }
+  }
+}
