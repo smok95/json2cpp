@@ -4,15 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"json2cpp/internal/nameutil"
 	"json2cpp/internal/types"
+	"json2cpp/templates"
 	"os"
+	"path"
 	"path/filepath"
 )
-
-// Note: embed path is relative to the source file location
-// This will be handled differently - we'll read from disk instead
 
 // AdapterGenerator generates parser-agnostic C++ code using the adapter pattern
 type AdapterGenerator struct {
@@ -94,31 +92,13 @@ func (g *AdapterGenerator) copyAdapterTemplates() error {
 		"jsoncpp_adapter.cpp",
 	}
 
-	// Get the templates directory path
-	// Look for templates/adapter relative to the current working directory or binary location
-	templateDirs := []string{
-		"templates/adapter",
-		"../../templates/adapter",
-		"../templates/adapter",
-	}
-
-	var templateDir string
-	for _, dir := range templateDirs {
-		if _, err := os.Stat(dir); err == nil {
-			templateDir = dir
-			break
-		}
-	}
-
-	if templateDir == "" {
-		return fmt.Errorf("template directory not found. Searched: %v", templateDirs)
-	}
-
+	// Read templates from embedded filesystem
 	for _, filename := range templateFiles {
-		templatePath := filepath.Join(templateDir, filename)
-		content, err := ioutil.ReadFile(templatePath)
+		// Use path.Join (not filepath.Join) because embed.FS always uses forward slashes
+		templatePath := path.Join("adapter", filename)
+		content, err := templates.FS.ReadFile(templatePath)
 		if err != nil {
-			return fmt.Errorf("failed to read template %s: %w", templatePath, err)
+			return fmt.Errorf("failed to read embedded template %s: %w", templatePath, err)
 		}
 
 		if err := g.writeFile(filename, string(content)); err != nil {
