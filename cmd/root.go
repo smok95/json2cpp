@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const version = "1.1.0"
+
 var (
 	inputFile     string
 	outputDir     string
@@ -23,6 +25,7 @@ var (
 	merge         bool
 	stringRef     bool
 	overwrite     bool
+	showVersion   bool
 )
 
 var rootCmd = &cobra.Command{
@@ -35,8 +38,9 @@ var rootCmd = &cobra.Command{
 	- JsonCpp
 
 	Generates separate files: types.h, serializer.h/cpp, and adapter files.
-	Can generate pre-C++11 compatible code for legacy toolchains.`,
+	Requires C++11 or later.`,
 	RunE: run,
+	Version: version,
 }
 
 func Execute() {
@@ -136,14 +140,13 @@ func run(cmd *cobra.Command, args []string) error {
 	fmt.Printf("\n✓ Generated successfully in: %s\n", outputDir)
 	fmt.Printf("  - types.h (data structures)\n")
 	fmt.Printf("  - serializer.h/cpp (serialization functions)\n")
-	fmt.Printf("  - json_ptr.h (smart pointer)\n")
 	fmt.Printf("  - json_adapter.h (base interface)\n")
 	fmt.Printf("  - rapidjson_adapter.h/cpp\n")
 	fmt.Printf("  - nlohmann_adapter.h/cpp\n")
 	fmt.Printf("  - jsoncpp_adapter.h/cpp\n")
 	fmt.Printf("\nStructs: %d\n", len(allStructs))
 	if legacyCpp {
-		fmt.Printf("Mode: C++03 compatible\n")
+		fmt.Printf("Mode: C++03 compatible (deprecated, use C++11+)\n")
 	} else {
 		fmt.Printf("Mode: Modern C++ (C++11+)\n")
 	}

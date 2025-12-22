@@ -75,18 +75,18 @@ std::string NlohmannJsonReader::GetString(const char* key, const std::string& de
     return defaultVal;
 }
 
-UniquePtr<IJsonReader> NlohmannJsonReader::GetArray(const char* key) const {
+std::unique_ptr<IJsonReader> NlohmannJsonReader::GetArray(const char* key) const {
     if (IsArray(key)) {
-        return UniquePtr<IJsonReader>(new NlohmannJsonReader(&(*json_)[key], true));
+        return std::unique_ptr<IJsonReader>(new NlohmannJsonReader(&(*json_)[key], true));
     }
-    return UniquePtr<IJsonReader>(JSON2CPP_NULLPTR);
+    return std::unique_ptr<IJsonReader>(nullptr);
 }
 
-UniquePtr<IJsonReader> NlohmannJsonReader::GetObject(const char* key) const {
+std::unique_ptr<IJsonReader> NlohmannJsonReader::GetObject(const char* key) const {
     if (IsObject(key)) {
-        return UniquePtr<IJsonReader>(new NlohmannJsonReader(&(*json_)[key], false));
+        return std::unique_ptr<IJsonReader>(new NlohmannJsonReader(&(*json_)[key], false));
     }
-    return UniquePtr<IJsonReader>(JSON2CPP_NULLPTR);
+    return std::unique_ptr<IJsonReader>(nullptr);
 }
 
 bool NlohmannJsonReader::IsArrayContext() const {
@@ -100,11 +100,11 @@ size_t NlohmannJsonReader::GetArraySize() const {
     return 0;
 }
 
-UniquePtr<IJsonReader> NlohmannJsonReader::GetElement(size_t index) const {
+std::unique_ptr<IJsonReader> NlohmannJsonReader::GetElement(size_t index) const {
     if (json_ && json_->is_array() && index < json_->size()) {
-        return UniquePtr<IJsonReader>(new NlohmannJsonReader(&(*json_)[index], false));
+        return std::unique_ptr<IJsonReader>(new NlohmannJsonReader(&(*json_)[index], false));
     }
-    return UniquePtr<IJsonReader>(JSON2CPP_NULLPTR);
+    return std::unique_ptr<IJsonReader>(nullptr);
 }
 
 bool NlohmannJsonReader::IsRootNull() const {
@@ -166,7 +166,7 @@ NlohmannJsonWriter::NlohmannJsonWriter(nlohmann::json* j, bool is_array)
     : json_(j), is_array_context_(is_array) {}
 
 void NlohmannJsonWriter::SetNull(const char* key) {
-    (*json_)[key] = JSON2CPP_NULLPTR;
+    (*json_)[key] = nullptr;
 }
 
 void NlohmannJsonWriter::SetBool(const char* key, bool value) {
@@ -185,14 +185,14 @@ void NlohmannJsonWriter::SetString(const char* key, const std::string& value) {
     (*json_)[key] = value;
 }
 
-UniquePtr<IJsonWriter> NlohmannJsonWriter::CreateArray(const char* key) {
+std::unique_ptr<IJsonWriter> NlohmannJsonWriter::CreateArray(const char* key) {
     (*json_)[key] = nlohmann::json::array();
-    return UniquePtr<IJsonWriter>(new NlohmannJsonWriter(&(*json_)[key], true));
+    return std::unique_ptr<IJsonWriter>(new NlohmannJsonWriter(&(*json_)[key], true));
 }
 
-UniquePtr<IJsonWriter> NlohmannJsonWriter::CreateObject(const char* key) {
+std::unique_ptr<IJsonWriter> NlohmannJsonWriter::CreateObject(const char* key) {
     (*json_)[key] = nlohmann::json::object();
-    return UniquePtr<IJsonWriter>(new NlohmannJsonWriter(&(*json_)[key], false));
+    return std::unique_ptr<IJsonWriter>(new NlohmannJsonWriter(&(*json_)[key], false));
 }
 
 bool NlohmannJsonWriter::IsArrayContext() const {
@@ -200,7 +200,7 @@ bool NlohmannJsonWriter::IsArrayContext() const {
 }
 
 void NlohmannJsonWriter::PushNull() {
-    json_->push_back(JSON2CPP_NULLPTR);
+    json_->push_back(nullptr);
 }
 
 void NlohmannJsonWriter::PushBool(bool value) {
@@ -219,9 +219,9 @@ void NlohmannJsonWriter::PushString(const std::string& value) {
     json_->push_back(value);
 }
 
-UniquePtr<IJsonWriter> NlohmannJsonWriter::PushObject() {
+std::unique_ptr<IJsonWriter> NlohmannJsonWriter::PushObject() {
     json_->push_back(nlohmann::json::object());
-    return UniquePtr<IJsonWriter>(new NlohmannJsonWriter(&json_->back(), false));
+    return std::unique_ptr<IJsonWriter>(new NlohmannJsonWriter(&json_->back(), false));
 }
 
 } // namespace json2cpp

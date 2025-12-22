@@ -21,40 +21,40 @@ public:
     explicit RapidJsonReader(const rapidjson::Value* v, bool is_array);
 
     // IJsonReader interface
-    bool HasMember(const char* key) const JSON2CPP_OVERRIDE;
+    bool HasMember(const char* key) const override;
 
-    bool IsNull(const char* key) const JSON2CPP_OVERRIDE;
-    bool IsBool(const char* key) const JSON2CPP_OVERRIDE;
-    bool IsInt(const char* key) const JSON2CPP_OVERRIDE;
-    bool IsDouble(const char* key) const JSON2CPP_OVERRIDE;
-    bool IsString(const char* key) const JSON2CPP_OVERRIDE;
-    bool IsArray(const char* key) const JSON2CPP_OVERRIDE;
-    bool IsObject(const char* key) const JSON2CPP_OVERRIDE;
+    bool IsNull(const char* key) const override;
+    bool IsBool(const char* key) const override;
+    bool IsInt(const char* key) const override;
+    bool IsDouble(const char* key) const override;
+    bool IsString(const char* key) const override;
+    bool IsArray(const char* key) const override;
+    bool IsObject(const char* key) const override;
 
-    bool GetBool(const char* key, bool defaultVal) const JSON2CPP_OVERRIDE;
-    int64_t GetInt64(const char* key, int64_t defaultVal) const JSON2CPP_OVERRIDE;
-    double GetDouble(const char* key, double defaultVal) const JSON2CPP_OVERRIDE;
-    std::string GetString(const char* key, const std::string& defaultVal) const JSON2CPP_OVERRIDE;
+    bool GetBool(const char* key, bool defaultVal) const override;
+    int64_t GetInt64(const char* key, int64_t defaultVal) const override;
+    double GetDouble(const char* key, double defaultVal) const override;
+    std::string GetString(const char* key, const std::string& defaultVal) const override;
 
-    UniquePtr<IJsonReader> GetArray(const char* key) const JSON2CPP_OVERRIDE;
-    UniquePtr<IJsonReader> GetObject(const char* key) const JSON2CPP_OVERRIDE;
+    std::unique_ptr<IJsonReader> GetArray(const char* key) const override;
+    std::unique_ptr<IJsonReader> GetObject(const char* key) const override;
 
-    bool IsArrayContext() const JSON2CPP_OVERRIDE;
-    size_t GetArraySize() const JSON2CPP_OVERRIDE;
-    UniquePtr<IJsonReader> GetElement(size_t index) const JSON2CPP_OVERRIDE;
+    bool IsArrayContext() const override;
+    size_t GetArraySize() const override;
+    std::unique_ptr<IJsonReader> GetElement(size_t index) const override;
 
-    bool IsRootNull() const JSON2CPP_OVERRIDE;
-    bool IsRootBool() const JSON2CPP_OVERRIDE;
-    bool IsRootInt() const JSON2CPP_OVERRIDE;
-    bool IsRootDouble() const JSON2CPP_OVERRIDE;
-    bool IsRootString() const JSON2CPP_OVERRIDE;
-    bool IsRootArray() const JSON2CPP_OVERRIDE;
-    bool IsRootObject() const JSON2CPP_OVERRIDE;
+    bool IsRootNull() const override;
+    bool IsRootBool() const override;
+    bool IsRootInt() const override;
+    bool IsRootDouble() const override;
+    bool IsRootString() const override;
+    bool IsRootArray() const override;
+    bool IsRootObject() const override;
 
-    bool GetRootBool(bool defaultVal) const JSON2CPP_OVERRIDE;
-    int64_t GetRootInt64(int64_t defaultVal) const JSON2CPP_OVERRIDE;
-    double GetRootDouble(double defaultVal) const JSON2CPP_OVERRIDE;
-    std::string GetRootString(const std::string& defaultVal) const JSON2CPP_OVERRIDE;
+    bool GetRootBool(bool defaultVal) const override;
+    int64_t GetRootInt64(int64_t defaultVal) const override;
+    double GetRootDouble(double defaultVal) const override;
+    std::string GetRootString(const std::string& defaultVal) const override;
 };
 
 class RapidJsonWriter : public IJsonWriter {
@@ -68,22 +68,22 @@ public:
     RapidJsonWriter(rapidjson::Value* v, rapidjson::Document::AllocatorType* a, bool is_array);
 
     // IJsonWriter interface
-    void SetNull(const char* key) JSON2CPP_OVERRIDE;
-    void SetBool(const char* key, bool value) JSON2CPP_OVERRIDE;
-    void SetInt64(const char* key, int64_t value) JSON2CPP_OVERRIDE;
-    void SetDouble(const char* key, double value) JSON2CPP_OVERRIDE;
-    void SetString(const char* key, const std::string& value) JSON2CPP_OVERRIDE;
+    void SetNull(const char* key) override;
+    void SetBool(const char* key, bool value) override;
+    void SetInt64(const char* key, int64_t value) override;
+    void SetDouble(const char* key, double value) override;
+    void SetString(const char* key, const std::string& value) override;
 
-    UniquePtr<IJsonWriter> CreateArray(const char* key) JSON2CPP_OVERRIDE;
-    UniquePtr<IJsonWriter> CreateObject(const char* key) JSON2CPP_OVERRIDE;
+    std::unique_ptr<IJsonWriter> CreateArray(const char* key) override;
+    std::unique_ptr<IJsonWriter> CreateObject(const char* key) override;
 
-    bool IsArrayContext() const JSON2CPP_OVERRIDE;
-    void PushNull() JSON2CPP_OVERRIDE;
-    void PushBool(bool value) JSON2CPP_OVERRIDE;
-    void PushInt64(int64_t value) JSON2CPP_OVERRIDE;
-    void PushDouble(double value) JSON2CPP_OVERRIDE;
-    void PushString(const std::string& value) JSON2CPP_OVERRIDE;
-    UniquePtr<IJsonWriter> PushObject() JSON2CPP_OVERRIDE;
+    bool IsArrayContext() const override;
+    void PushNull() override;
+    void PushBool(bool value) override;
+    void PushInt64(int64_t value) override;
+    void PushDouble(double value) override;
+    void PushString(const std::string& value) override;
+    std::unique_ptr<IJsonWriter> PushObject() override;
 };
 
 } // namespace json2cpp

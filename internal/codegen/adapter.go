@@ -82,7 +82,6 @@ func (g *AdapterGenerator) GenerateFiles(info *types.TypeInfo) error {
 // copyAdapterTemplates copies all adapter template files to the output directory
 func (g *AdapterGenerator) copyAdapterTemplates() error {
 	templateFiles := []string{
-		"json_ptr.h",
 		"json_adapter.h",
 		"rapidjson_adapter.h",
 		"rapidjson_adapter.cpp",
@@ -441,10 +440,10 @@ func (g *AdapterGenerator) generateDeserializeField(f *types.Field) (string, err
 		if f.NestedType != nil {
 			// Array of nested objects
 			buf.WriteString(fmt.Sprintf("    if (reader.IsArray(\"%s\")) {\n", jsonName))
-			buf.WriteString(fmt.Sprintf("        json2cpp::UniquePtr<json2cpp::IJsonReader> arr = reader.GetArray(\"%s\");\n", jsonName))
+			buf.WriteString(fmt.Sprintf("        std::unique_ptr<json2cpp::IJsonReader> arr = reader.GetArray(\"%s\");\n", jsonName))
 			buf.WriteString(fmt.Sprintf("        obj.%s.clear();\n", fieldName))
 			buf.WriteString("        for (size_t i = 0; i < arr->GetArraySize(); ++i) {\n")
-			buf.WriteString("            json2cpp::UniquePtr<json2cpp::IJsonReader> elem = arr->GetElement(i);\n")
+			buf.WriteString("            std::unique_ptr<json2cpp::IJsonReader> elem = arr->GetElement(i);\n")
 			buf.WriteString(fmt.Sprintf("            %s item;\n", f.NestedType.Name))
 			buf.WriteString(fmt.Sprintf("            Deserialize%s(item, *elem);\n", f.NestedType.Name))
 			buf.WriteString(fmt.Sprintf("            obj.%s.push_back(item);\n", fieldName))
@@ -453,10 +452,10 @@ func (g *AdapterGenerator) generateDeserializeField(f *types.Field) (string, err
 		} else {
 			// Array of primitives
 			buf.WriteString(fmt.Sprintf("    if (reader.IsArray(\"%s\")) {\n", jsonName))
-			buf.WriteString(fmt.Sprintf("        json2cpp::UniquePtr<json2cpp::IJsonReader> arr = reader.GetArray(\"%s\");\n", jsonName))
+			buf.WriteString(fmt.Sprintf("        std::unique_ptr<json2cpp::IJsonReader> arr = reader.GetArray(\"%s\");\n", jsonName))
 			buf.WriteString(fmt.Sprintf("        obj.%s.clear();\n", fieldName))
 			buf.WriteString("        for (size_t i = 0; i < arr->GetArraySize(); ++i) {\n")
-			buf.WriteString("            json2cpp::UniquePtr<json2cpp::IJsonReader> elem = arr->GetElement(i);\n")
+			buf.WriteString("            std::unique_ptr<json2cpp::IJsonReader> elem = arr->GetElement(i);\n")
 
 			switch f.ElemType {
 			case types.JSONString:
@@ -476,7 +475,7 @@ func (g *AdapterGenerator) generateDeserializeField(f *types.Field) (string, err
 	case types.JSONObject:
 		if f.NestedType != nil {
 			buf.WriteString(fmt.Sprintf("    if (reader.IsObject(\"%s\")) {\n", jsonName))
-			buf.WriteString(fmt.Sprintf("        json2cpp::UniquePtr<json2cpp::IJsonReader> nested = reader.GetObject(\"%s\");\n", jsonName))
+			buf.WriteString(fmt.Sprintf("        std::unique_ptr<json2cpp::IJsonReader> nested = reader.GetObject(\"%s\");\n", jsonName))
 			buf.WriteString(fmt.Sprintf("        Deserialize%s(obj.%s, *nested);\n", f.NestedType.Name, fieldName))
 			buf.WriteString("    }\n")
 		}
@@ -532,12 +531,12 @@ func (g *AdapterGenerator) generateSerializeField(f *types.Field) (string, error
 
 	case types.JSONArray:
 		buf.WriteString(fmt.Sprintf("    {\n"))
-		buf.WriteString(fmt.Sprintf("        json2cpp::UniquePtr<json2cpp::IJsonWriter> arr = writer.CreateArray(\"%s\");\n", jsonName))
+		buf.WriteString(fmt.Sprintf("        std::unique_ptr<json2cpp::IJsonWriter> arr = writer.CreateArray(\"%s\");\n", jsonName))
 
 		if f.NestedType != nil {
 			// Array of nested objects
 			buf.WriteString(fmt.Sprintf("        for (size_t i = 0; i < obj.%s.size(); ++i) {\n", fieldName))
-			buf.WriteString("            json2cpp::UniquePtr<json2cpp::IJsonWriter> item = arr->PushObject();\n")
+			buf.WriteString("            std::unique_ptr<json2cpp::IJsonWriter> item = arr->PushObject();\n")
 			buf.WriteString(fmt.Sprintf("            Serialize%s(obj.%s[i], *item);\n", f.NestedType.Name, fieldName))
 			buf.WriteString("        }\n")
 		} else {
@@ -563,7 +562,7 @@ func (g *AdapterGenerator) generateSerializeField(f *types.Field) (string, error
 	case types.JSONObject:
 		if f.NestedType != nil {
 			buf.WriteString(fmt.Sprintf("    {\n"))
-			buf.WriteString(fmt.Sprintf("        json2cpp::UniquePtr<json2cpp::IJsonWriter> nested = writer.CreateObject(\"%s\");\n", jsonName))
+			buf.WriteString(fmt.Sprintf("        std::unique_ptr<json2cpp::IJsonWriter> nested = writer.CreateObject(\"%s\");\n", jsonName))
 			buf.WriteString(fmt.Sprintf("        Serialize%s(obj.%s, *nested);\n", f.NestedType.Name, fieldName))
 			buf.WriteString("    }\n")
 		}

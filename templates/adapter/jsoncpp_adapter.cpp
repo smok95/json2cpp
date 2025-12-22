@@ -67,18 +67,18 @@ std::string JsonCppReader::GetString(const char* key, const std::string& default
     return IsString(key) ? (*value_)[key].asString() : defaultVal;
 }
 
-UniquePtr<IJsonReader> JsonCppReader::GetArray(const char* key) const {
+std::unique_ptr<IJsonReader> JsonCppReader::GetArray(const char* key) const {
     if (IsArray(key)) {
-        return UniquePtr<IJsonReader>(new JsonCppReader(&(*value_)[key], true));
+        return std::unique_ptr<IJsonReader>(new JsonCppReader(&(*value_)[key], true));
     }
-    return UniquePtr<IJsonReader>(JSON2CPP_NULLPTR);
+    return std::unique_ptr<IJsonReader>(nullptr);
 }
 
-UniquePtr<IJsonReader> JsonCppReader::GetObject(const char* key) const {
+std::unique_ptr<IJsonReader> JsonCppReader::GetObject(const char* key) const {
     if (IsObject(key)) {
-        return UniquePtr<IJsonReader>(new JsonCppReader(&(*value_)[key], false));
+        return std::unique_ptr<IJsonReader>(new JsonCppReader(&(*value_)[key], false));
     }
-    return UniquePtr<IJsonReader>(JSON2CPP_NULLPTR);
+    return std::unique_ptr<IJsonReader>(nullptr);
 }
 
 bool JsonCppReader::IsArrayContext() const {
@@ -92,11 +92,11 @@ size_t JsonCppReader::GetArraySize() const {
     return 0;
 }
 
-UniquePtr<IJsonReader> JsonCppReader::GetElement(size_t index) const {
+std::unique_ptr<IJsonReader> JsonCppReader::GetElement(size_t index) const {
     if (value_ && value_->isArray() && index < value_->size()) {
-        return UniquePtr<IJsonReader>(new JsonCppReader(&(*value_)[static_cast<Json::ArrayIndex>(index)], false));
+        return std::unique_ptr<IJsonReader>(new JsonCppReader(&(*value_)[static_cast<Json::ArrayIndex>(index)], false));
     }
-    return UniquePtr<IJsonReader>(JSON2CPP_NULLPTR);
+    return std::unique_ptr<IJsonReader>(nullptr);
 }
 
 bool JsonCppReader::IsRootNull() const {
@@ -180,14 +180,14 @@ void JsonCppWriter::SetString(const char* key, const std::string& value) {
     (*value_)[key] = value;
 }
 
-UniquePtr<IJsonWriter> JsonCppWriter::CreateArray(const char* key) {
+std::unique_ptr<IJsonWriter> JsonCppWriter::CreateArray(const char* key) {
     (*value_)[key] = Json::Value(Json::arrayValue);
-    return UniquePtr<IJsonWriter>(new JsonCppWriter(&(*value_)[key], true));
+    return std::unique_ptr<IJsonWriter>(new JsonCppWriter(&(*value_)[key], true));
 }
 
-UniquePtr<IJsonWriter> JsonCppWriter::CreateObject(const char* key) {
+std::unique_ptr<IJsonWriter> JsonCppWriter::CreateObject(const char* key) {
     (*value_)[key] = Json::Value(Json::objectValue);
-    return UniquePtr<IJsonWriter>(new JsonCppWriter(&(*value_)[key], false));
+    return std::unique_ptr<IJsonWriter>(new JsonCppWriter(&(*value_)[key], false));
 }
 
 bool JsonCppWriter::IsArrayContext() const {
@@ -214,10 +214,10 @@ void JsonCppWriter::PushString(const std::string& value) {
     value_->append(value);
 }
 
-UniquePtr<IJsonWriter> JsonCppWriter::PushObject() {
+std::unique_ptr<IJsonWriter> JsonCppWriter::PushObject() {
     value_->append(Json::Value(Json::objectValue));
     Json::Value& objRef = (*value_)[value_->size() - 1];
-    return UniquePtr<IJsonWriter>(new JsonCppWriter(&objRef, false));
+    return std::unique_ptr<IJsonWriter>(new JsonCppWriter(&objRef, false));
 }
 
 } // namespace json2cpp

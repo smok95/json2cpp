@@ -67,18 +67,18 @@ std::string RapidJsonReader::GetString(const char* key, const std::string& defau
     return IsString(key) ? std::string((*value_)[key].GetString()) : defaultVal;
 }
 
-UniquePtr<IJsonReader> RapidJsonReader::GetArray(const char* key) const {
+std::unique_ptr<IJsonReader> RapidJsonReader::GetArray(const char* key) const {
     if (IsArray(key)) {
-        return UniquePtr<IJsonReader>(new RapidJsonReader(&(*value_)[key], true));
+        return std::unique_ptr<IJsonReader>(new RapidJsonReader(&(*value_)[key], true));
     }
-    return UniquePtr<IJsonReader>(JSON2CPP_NULLPTR);
+    return std::unique_ptr<IJsonReader>(nullptr);
 }
 
-UniquePtr<IJsonReader> RapidJsonReader::GetObject(const char* key) const {
+std::unique_ptr<IJsonReader> RapidJsonReader::GetObject(const char* key) const {
     if (IsObject(key)) {
-        return UniquePtr<IJsonReader>(new RapidJsonReader(&(*value_)[key], false));
+        return std::unique_ptr<IJsonReader>(new RapidJsonReader(&(*value_)[key], false));
     }
-    return UniquePtr<IJsonReader>(JSON2CPP_NULLPTR);
+    return std::unique_ptr<IJsonReader>(nullptr);
 }
 
 bool RapidJsonReader::IsArrayContext() const {
@@ -92,11 +92,11 @@ size_t RapidJsonReader::GetArraySize() const {
     return 0;
 }
 
-UniquePtr<IJsonReader> RapidJsonReader::GetElement(size_t index) const {
+std::unique_ptr<IJsonReader> RapidJsonReader::GetElement(size_t index) const {
     if (value_ && value_->IsArray() && index < value_->Size()) {
-        return UniquePtr<IJsonReader>(new RapidJsonReader(&(*value_)[static_cast<rapidjson::SizeType>(index)], false));
+        return std::unique_ptr<IJsonReader>(new RapidJsonReader(&(*value_)[static_cast<rapidjson::SizeType>(index)], false));
     }
-    return UniquePtr<IJsonReader>(JSON2CPP_NULLPTR);
+    return std::unique_ptr<IJsonReader>(nullptr);
 }
 
 bool RapidJsonReader::IsRootNull() const {
@@ -193,24 +193,24 @@ void RapidJsonWriter::SetString(const char* key, const std::string& value) {
     value_->AddMember(k, v, *allocator_);
 }
 
-UniquePtr<IJsonWriter> RapidJsonWriter::CreateArray(const char* key) {
+std::unique_ptr<IJsonWriter> RapidJsonWriter::CreateArray(const char* key) {
     rapidjson::Value k(key, *allocator_);
     rapidjson::Value arr(rapidjson::kArrayType);
     value_->AddMember(k, arr, *allocator_);
 
     // Get reference to the newly added array
     rapidjson::Value& arrRef = (*value_)[key];
-    return UniquePtr<IJsonWriter>(new RapidJsonWriter(&arrRef, allocator_, true));
+    return std::unique_ptr<IJsonWriter>(new RapidJsonWriter(&arrRef, allocator_, true));
 }
 
-UniquePtr<IJsonWriter> RapidJsonWriter::CreateObject(const char* key) {
+std::unique_ptr<IJsonWriter> RapidJsonWriter::CreateObject(const char* key) {
     rapidjson::Value k(key, *allocator_);
     rapidjson::Value obj(rapidjson::kObjectType);
     value_->AddMember(k, obj, *allocator_);
 
     // Get reference to the newly added object
     rapidjson::Value& objRef = (*value_)[key];
-    return UniquePtr<IJsonWriter>(new RapidJsonWriter(&objRef, allocator_, false));
+    return std::unique_ptr<IJsonWriter>(new RapidJsonWriter(&objRef, allocator_, false));
 }
 
 bool RapidJsonWriter::IsArrayContext() const {
@@ -245,13 +245,13 @@ void RapidJsonWriter::PushString(const std::string& value) {
     value_->PushBack(v, *allocator_);
 }
 
-UniquePtr<IJsonWriter> RapidJsonWriter::PushObject() {
+std::unique_ptr<IJsonWriter> RapidJsonWriter::PushObject() {
     rapidjson::Value obj(rapidjson::kObjectType);
     value_->PushBack(obj, *allocator_);
 
     // Get reference to the newly added object
     rapidjson::Value& objRef = (*value_)[value_->Size() - 1];
-    return UniquePtr<IJsonWriter>(new RapidJsonWriter(&objRef, allocator_, false));
+    return std::unique_ptr<IJsonWriter>(new RapidJsonWriter(&objRef, allocator_, false));
 }
 
 } // namespace json2cpp

@@ -4,16 +4,10 @@
 #ifndef JSON2CPP_JSON_ADAPTER_H
 #define JSON2CPP_JSON_ADAPTER_H
 
-#include "json_ptr.h"
+#include <memory>
 #include <string>
 #include <vector>
-
-// Ensure int64_t is available
-#if __cplusplus >= 201103L
-    #include <cstdint>
-#else
-    #include <stdint.h>
-#endif
+#include <cstdint>
 
 namespace json2cpp {
 
@@ -40,14 +34,14 @@ public:
     virtual double GetDouble(const char* key, double defaultVal = 0.0) const = 0;
     virtual std::string GetString(const char* key, const std::string& defaultVal = std::string()) const = 0;
 
-    // Array/Object access (returns UniquePtr)
-    virtual UniquePtr<IJsonReader> GetArray(const char* key) const = 0;
-    virtual UniquePtr<IJsonReader> GetObject(const char* key) const = 0;
+    // Array/Object access (returns std::unique_ptr)
+    virtual std::unique_ptr<IJsonReader> GetArray(const char* key) const = 0;
+    virtual std::unique_ptr<IJsonReader> GetObject(const char* key) const = 0;
 
     // Array context methods
     virtual bool IsArrayContext() const = 0;
     virtual size_t GetArraySize() const = 0;
-    virtual UniquePtr<IJsonReader> GetElement(size_t index) const = 0;
+    virtual std::unique_ptr<IJsonReader> GetElement(size_t index) const = 0;
 
     // Root value type checking (when used as array element or standalone)
     virtual bool IsRootNull() const = 0;
@@ -77,9 +71,9 @@ public:
     virtual void SetDouble(const char* key, double value) = 0;
     virtual void SetString(const char* key, const std::string& value) = 0;
 
-    // Array/Object creation (returns UniquePtr)
-    virtual UniquePtr<IJsonWriter> CreateArray(const char* key) = 0;
-    virtual UniquePtr<IJsonWriter> CreateObject(const char* key) = 0;
+    // Array/Object creation (returns std::unique_ptr)
+    virtual std::unique_ptr<IJsonWriter> CreateArray(const char* key) = 0;
+    virtual std::unique_ptr<IJsonWriter> CreateObject(const char* key) = 0;
 
     // Array context methods
     virtual bool IsArrayContext() const = 0;
@@ -88,7 +82,7 @@ public:
     virtual void PushInt64(int64_t value) = 0;
     virtual void PushDouble(double value) = 0;
     virtual void PushString(const std::string& value) = 0;
-    virtual UniquePtr<IJsonWriter> PushObject() = 0;
+    virtual std::unique_ptr<IJsonWriter> PushObject() = 0;
 };
 
 } // namespace json2cpp
