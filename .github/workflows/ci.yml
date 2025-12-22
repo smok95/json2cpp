@@ -59,9 +59,9 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" == "Windows" ]; then
-            go run main.go -i examples/config.json -o out --overwrite
+            go run main.go -i examples/config.json -o out -p rapidjson
           else
-            ./json2cpp -i examples/config.json -o out --overwrite
+            ./json2cpp -i examples/config.json -o out -p rapidjson
           fi
 
       - name: Set up CMake

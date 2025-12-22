@@ -19,10 +19,10 @@ FetchContent_MakeAvailable(rapidjson)
 set(GENERATED_DIR ${CMAKE_SOURCE_DIR}/../out)
 
 # 기본 테스트 (가장 간단한 테스트 - CI에서 사용)
-add_executable(test_basic test_basic.cpp ${GENERATED_DIR}/serializer.cpp ${GENERATED_DIR}/rapidjson_adapter.cpp)
+add_executable(test_basic test_basic.cpp ${GENERATED_DIR}/serializer_rapidjson.cpp)
 target_include_directories(test_basic PRIVATE
     ${rapidjson_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/..
+    ${GENERATED_DIR}
 )
 
 # 테스트 실행 파일 (예제 파일 필요)

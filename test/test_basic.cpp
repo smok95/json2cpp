@@ -6,9 +6,8 @@
 #include "rapidjson/stringbuffer.h"
 
 // Include generated files from ../out
-#include "../out/types.h"
-#include "../out/serializer.h"
-#include "../out/rapidjson_adapter.h"
+#include "types.h"
+#include "serializer_rapidjson.h"
 
 int main() {
     std::cout << "========================================" << std::endl;
@@ -32,23 +31,21 @@ int main() {
     }
     std::cout << "[PASS] JSON parsing" << std::endl;
 
-    // Try to deserialize
-    json2cpp::RapidJsonReader reader(doc);
+    // Deserialize using new direct API
     Root root;
     try {
-        DeserializeRoot(root, reader);
+        DeserializeRoot(root, doc);
         std::cout << "[PASS] Deserialization" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "[FAIL] Deserialization: " << e.what() << std::endl;
         return 1;
     }
 
-    // Serialize back
+    // Serialize back using new direct API
     rapidjson::Document outDoc;
     outDoc.SetObject();
-    json2cpp::RapidJsonWriter writer(outDoc, outDoc.GetAllocator());
     try {
-        SerializeRoot(root, writer);
+        SerializeRoot(root, outDoc, outDoc.GetAllocator());
         std::cout << "[PASS] Serialization" << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "[FAIL] Serialization: " << e.what() << std::endl;
