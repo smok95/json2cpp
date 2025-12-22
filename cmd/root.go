@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const version = "1.1.0"
+const version = "1.2.0"
 
 var (
 	inputFile     string
@@ -30,14 +30,14 @@ var (
 
 var rootCmd = &cobra.Command{
 	Use:   "json2cpp",
-	Short: "JSON to C++ code generator with parser-agnostic adapter pattern",
-	Long: `JSON to C++ code generator that creates parser-independent structs and serialization code.
-	Uses adapter pattern to support multiple JSON parsers without code changes:
-	- RapidJSON
-	- nlohmann/json
-	- JsonCpp
+	Short: "JSON to C++ code generator with parser-independent design",
+	Long: `JSON to C++ code generator that creates parser-independent data structs and parser-specific serialization code.
+	Supports multiple JSON parsers:
+	- rapidjson (default)
+	- nlohmann
+	- jsoncpp
 
-	Generates separate files: types.h, serializer.h/cpp, and adapter files.
+	Generates: types.h (parser-independent) and serializer_<parser>.h/cpp (parser-specific).
 	Requires C++11 or later.`,
 	RunE: run,
 	Version: version,
@@ -53,6 +53,7 @@ func Execute() {
 func init() {
 	rootCmd.Flags().StringVarP(&inputFile, "input", "i", "", "Input JSON file (required)")
 	rootCmd.Flags().StringVarP(&outputDir, "output", "o", "./generated", "Output directory for generated files")
+	rootCmd.Flags().StringVarP(&parserBackend, "parser", "p", "rapidjson", "JSON parser backend (rapidjson, nlohmann, jsoncpp)")
 	rootCmd.Flags().BoolVar(&legacyCpp, "legacy-cpp", false, "Generate C++03 compatible code")
 	rootCmd.Flags().StringVar(&namespace, "namespace", "", "C++ namespace for generated types")
 	rootCmd.Flags().BoolVar(&camelCase, "camelcase", false, "Use camelCase for field names (default: snake_case)")
@@ -62,10 +63,8 @@ func init() {
 	rootCmd.MarkFlagRequired("input")
 
 	// Deprecated flags (kept for compatibility but ignored)
-	rootCmd.Flags().StringVarP(&parserBackend, "parser", "p", "", "[DEPRECATED] Parser flag is ignored - adapter pattern supports all parsers")
 	rootCmd.Flags().BoolVar(&stringRef, "string-ref", false, "[DEPRECATED] String-ref flag is ignored")
 	rootCmd.Flags().BoolVar(&overwrite, "overwrite", false, "[DEPRECATED] Output directory is always overwritten")
-	rootCmd.Flags().MarkHidden("parser")
 	rootCmd.Flags().MarkHidden("string-ref")
 	rootCmd.Flags().MarkHidden("overwrite")
 }
@@ -114,8 +113,22 @@ func run(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("no structs generated from input")
 	}
 
-	// Configure adapter-based code generator
+	// Convert parser backend string to ParserType
+	var parser codegen.ParserType
+	switch parserBackend {
+	case "rapidjson":
+		parser = codegen.ParserRapidJSON
+	case "nlohmann":
+		parser = codegen.ParserNlohmann
+	case "jsoncpp":
+		parser = codegen.ParserJsonCpp
+	default:
+		return fmt.Errorf("unsupported parser: %s (choose: rapidjson, nlohmann, jsoncpp)", parserBackend)
+	}
+
+	// Configure code generator
 	cfg := codegen.Config{
+		Parser:       parser,
 		LegacyCPP:    legacyCpp,
 		Namespace:    namespace,
 		CamelCase:    camelCase,
@@ -130,21 +143,19 @@ func run(cmd *cobra.Command, args []string) error {
 		Structs: allStructs,
 	}
 
-	// Generate all files (types.h, serializer.h/cpp, adapter files)
-	fmt.Printf("Generating parser-agnostic code...\n")
+	// Generate all files
+	fmt.Printf("Generating code for %s parser...\n", parserBackend)
 	if err := gen.GenerateFiles(typeInfo); err != nil {
 		return fmt.Errorf("failed to generate files: %w", err)
 	}
 
 	// Print summary
 	fmt.Printf("\n✓ Generated successfully in: %s\n", outputDir)
-	fmt.Printf("  - types.h (data structures)\n")
-	fmt.Printf("  - serializer.h/cpp (serialization functions)\n")
-	fmt.Printf("  - json_adapter.h (base interface)\n")
-	fmt.Printf("  - rapidjson_adapter.h/cpp\n")
-	fmt.Printf("  - nlohmann_adapter.h/cpp\n")
-	fmt.Printf("  - jsoncpp_adapter.h/cpp\n")
+	fmt.Printf("  - types.h (parser-independent data structures)\n")
+	fmt.Printf("  - serializer_%s.h (serialization declarations)\n", parserBackend)
+	fmt.Printf("  - serializer_%s.cpp (serialization implementation)\n", parserBackend)
 	fmt.Printf("\nStructs: %d\n", len(allStructs))
+	fmt.Printf("Parser: %s\n", parserBackend)
 	if legacyCpp {
 		fmt.Printf("Mode: C++03 compatible (deprecated, use C++11+)\n")
 	} else {
