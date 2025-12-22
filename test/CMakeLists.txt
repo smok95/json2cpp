@@ -5,15 +5,18 @@ project(json2cpp_test)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# rapidjson 헤더 경로 설정
-# rapidjson은 헤더 온리 라이브러리이므로 헤더 경로만 필요
+# rapidjson 헤더 경로 설정 (header-only 라이브러리)
 include(FetchContent)
 FetchContent_Declare(
     rapidjson
     GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
     GIT_TAG v1.1.0
 )
-FetchContent_MakeAvailable(rapidjson)
+# RapidJSON의 CMakeLists.txt를 사용하지 않고 소스만 다운로드
+FetchContent_GetProperties(rapidjson)
+if(NOT rapidjson_POPULATED)
+    FetchContent_Populate(rapidjson)
+endif()
 
 # 생성된 헤더 파일 경로
 set(GENERATED_DIR ${CMAKE_SOURCE_DIR}/../out)
