@@ -13,13 +13,62 @@ import (
 // This treats any non-alphanumeric rune as a word boundary (e.g. '-', ':', '.', ' ').
 func SanitizeToCppIdentifier(key string, camelCase bool, forType bool) string {
 	words := make([]string, 0)
-	var cur []rune
 
-	// split into words on non-alnum (treat '_' also as separator)
-	for _, r := range key {
+	// Split into words considering:
+	// 1. Non-alphanumeric characters as boundaries
+	// 2. Uppercase letters as word starts (for camelCase/PascalCase)
+	// 3. Digits can start new words
+	var cur []rune
+	runes := []rune(key)
+
+	for i := 0; i < len(runes); i++ {
+		r := runes[i]
+
 		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			// Check if this is a word boundary
+			if len(cur) > 0 {
+				lastRune := cur[len(cur)-1]
+
+				// Case 1: lowercase/digit followed by uppercase letter
+				// "userName" -> "user" + "Name"
+				// "user2Name" -> "user2" + "Name"
+				if unicode.IsUpper(r) && (unicode.IsLower(lastRune) || unicode.IsDigit(lastRune)) {
+					words = append(words, string(cur))
+					cur = []rune{r}
+					continue
+				}
+
+				// Case 2: Consecutive uppercase followed by lowercase
+				// "HTTPStatus" -> "HTTP" + "Status"
+				if unicode.IsUpper(r) && unicode.IsUpper(lastRune) {
+					if i+1 < len(runes) && unicode.IsLower(runes[i+1]) {
+						// Split before this uppercase letter
+						words = append(words, string(cur))
+						cur = []rune{r}
+						continue
+					}
+				}
+
+				// Case 3: letter followed by digit
+				// "v2test" -> "v" + "2test"
+				if unicode.IsDigit(r) && unicode.IsLetter(lastRune) {
+					words = append(words, string(cur))
+					cur = []rune{r}
+					continue
+				}
+
+				// Case 4: digit followed by letter
+				// "base64Encode" -> "base" + "64" + "Encode"
+				if unicode.IsLetter(r) && unicode.IsDigit(lastRune) {
+					words = append(words, string(cur))
+					cur = []rune{r}
+					continue
+				}
+			}
+
 			cur = append(cur, r)
 		} else {
+			// Non-alphanumeric: word boundary
 			if len(cur) > 0 {
 				words = append(words, string(cur))
 				cur = cur[:0]
